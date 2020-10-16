@@ -48,39 +48,53 @@ class MainActivity : AppCompatActivity() {
             private fun downloadXML(urlPath : String?) : String {
                 val xmlResult = StringBuilder()
 
-                try{
+                try {
                     val Url = URL(urlPath)
-                    val connect : HttpURLConnection = Url.openConnection() as HttpURLConnection
+                    val connect: HttpURLConnection = Url.openConnection() as HttpURLConnection
                     val response = connect.responseCode
-                    Log.d(DATATAG,"downloadXML : The response code $response")
+                    Log.d(DATATAG, "downloadXML : The response code $response")
 
-//            val inputStream = connect.inputStream
-//            val inputStreamReader = InputStreamReader(inputStream)
-//            val reader = BufferedReader(inputStreamReader)
-                    val reader = BufferedReader(InputStreamReader(connect.inputStream))
-
-                    val inputBuffer = CharArray(500)
-                    var charRead = 0
-                    while (charRead>=0) {
-                        charRead = reader.read(inputBuffer)
-                        if (charRead>0) {
-                            xmlResult.append(String(inputBuffer,0,charRead))
-                        }
+//                    val reader = BufferedReader(InputStreamReader(connect.inputStream))
+//
+//                    val inputBuffer = CharArray(500)
+//                    var charRead = 0
+//                    while (charRead >= 0) {
+//                        charRead = reader.read(inputBuffer)
+//                        if (charRead > 0) {
+//                            xmlResult.append(String(inputBuffer, 0, charRead))
+//                        }
+//                    }
+//                    reader.close()
+               //Replace the above code
+                    val stream = connect.inputStream
+                    stream.buffered().reader().use {reader ->
+                        xmlResult.append(reader.readText())
                     }
-                    reader.close()
 
-                    Log.d(DATATAG,"Received ${xmlResult.length}")
+                    Log.d(DATATAG, "Received ${xmlResult.length}")
                     return xmlResult.toString()
-                }catch (e: MalformedURLException) {
-                    Log.e(DATATAG,"downloadXML : Invalid URL ${e.message}")
-                }catch (e:IOException) {
-                    Log.e(DATATAG,"downloadXML : IO Except ${e.message}")
-                }catch (e: SecurityException) {
-                    e.printStackTrace()
-                    Log.e(DATATAG,"Network Permission not available for network ${e.message}")
-                }catch (e : Exception) {
-                    Log.e(DATATAG,"Unknown Errors ${e.message}")
+//                }catch (e: MalformedURLException) {
+//                    Log.e(DATATAG,"downloadXML : Invalid URL ${e.message}")
+//                }catch (e:IOException) {
+//                    Log.e(DATATAG,"downloadXML : IO Except ${e.message}")
+//                }catch (e: SecurityException) {
+//                    e.printStackTrace()
+//                    Log.e(DATATAG,"Network Permission not available for network ${e.message}")
+//                }catch (e : Exception) {
+//                    Log.e(DATATAG,"Unknown Errors ${e.message}")
+//                }
                 }
+                  catch(e:Exception) {
+                      val errorMessage: String = when(e) {
+                          is MalformedURLException -> "downloadXML : Invalid URL ${e.message}"
+                          is IOException -> "downloadXML : IO Except ${e.message}"
+                          is SecurityException -> {e.printStackTrace()
+                              "Network Permission not available for network ${e.message}"
+                          }
+                          else -> "Unknown Errors ${e.message}"
+                      }
+                      Log.e(DATATAG,errorMessage)
+                  }
                 return ""
             }
         }
